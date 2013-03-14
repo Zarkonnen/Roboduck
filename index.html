@@ -1,1 +1,120 @@
-HELLO DUCK
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+	  <meta name="description" content="Roboduck helps you find the cause of your problems."/>
+    <title>Roboduck</title>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+    <script src="jquery.js"></script>
+    <script src="handlebars.js"></script>
+    <script src="exampleState.js"></script>
+    <script src="duck.js"></script>
+  </head>
+  <body>
+    <div id="content"></div>
+    
+    <script id="t_addProblem" type="text/x-handlebars-template">
+      <div id="{{id}}" class="addProblem step">
+        <div class="duck">What seems to be the problem?</div>
+        <div id="{{id}}_text">{{text}}</div>
+        <div class="buttons"><span class="button{{#if next}} chosen{{/if}}">OK</span></div>
+      </div>
+    </script>
+    
+    <script id="t_addCauses" type="text/x-handlebars-template">
+      <div class="step">
+        <div class="duck">What could be causing it?</div>
+        <table id="{{id}}" class="addCauses">
+          {{{causes}}}
+        </table>
+      
+        <div class="buttons"><span class="button{{#if next}} chosen{{/if}}">Done</span></div>
+      </div>
+    </script>
+    
+    <script id="t_cause" type="text/x-handlebars-template">
+      <tr id="{{id}}" class="cause">
+        <td>{{text}}</td><td>{{weight}}</td>
+      </tr>
+    </script>
+    
+    <script id="t_addTests" type="text/x-handlebars-template">
+      <div class="step">
+        <div class="duck">OK. What could you do to find out the cause?</div>
+        <div id="{{id}}" class="addTests">
+          {{{tests}}}
+        </div>
+      </div>
+    </script>
+    
+    <script id="t_test" type="text/x-handlebars-template">
+      <table id="{{id}}_test" class="test">
+        <tr>
+          <td>{{text}}</td>
+          <td>{{cost}}</td>
+        </tr>
+      </table>
+      
+      <div class="duck">What outcomes could this have?</div>
+      <div id="{{id}}_outcomes">
+        {{{outcomes}}}
+      </div>
+      
+      <div class="buttons"><span class="button{{#if done}} chosen{{/if}}{{#if another}} notchosen{{/if}}">Done</span> <span class="button{{#if another}} chosen{{/if}}{{#if done}} notchosen{{/if}}">It could also be...</span></div>
+    </script>
+    
+    <script id="t_outcome" type="text/x-handlebars-template">
+      <div id="{{id}}" class="outcome">
+        <div>{{text}}</div>
+        <div class="duck">Which would eliminate which causes?</div>
+        <ul class="eliminations">
+          {{{eliminations}}}
+        </ul>
+      </div>
+    </script>
+    
+    <script id="t_eliminates" type="text/x-handlebars-template">
+      <li class="{{#if eliminated}}eliminated{{/if}}">{{text}}</li>
+    </script>
+
+    <script id="t_testDone" type="text/x-handlebars-template">
+      <div class="step">
+        {{{tests}}}
+        {{#if hasOutcome}}
+        <div class="duck">What was the outcome?</div>
+        {{{outcomes}}}
+        {{/if}}
+      </div>
+    </script>
+    
+    <script id="t_doneTest" type="text/x-handlebars-template">
+      <div class="alone"><span class="button{{#if chosen}} chosen{{/if}}{{#if notchosen}} notchosen{{/if}}">{{text}}</span></div>
+    </script>
+    
+    <script id="t_outcomeHappened" type="text/x-handlebars-template">
+      <div class="alone"><span class="button{{#if chosen}} chosen{{/if}}{{#if notchosen}} notchosen{{/if}}">{{text}}</span></div>
+    </script>
+    
+    <script id="t_duckSuggestion" type="text/x-handlebars-template">
+      <div class="step">
+        <div id="{{id}}" class="duckSuggestion duck">
+          You should: {{test.text}}
+        </div>
+      </div>
+    </script>
+    
+    <script id="t_duckConclusion" type="text/x-handlebars-template">
+      <div class="step">
+        <div id="{{id}}" class="duckConclusion duck">
+          {{cause.text}}
+        </div>
+      </div>
+    </script>
+    
+    <script>
+      $(document).ready(function() {
+        startDuck();
+      });
+    </script>
+  </body>
+</html>

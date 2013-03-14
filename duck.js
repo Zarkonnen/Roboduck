@@ -18,6 +18,18 @@ var data = {
   ]
 };
 
+if (localStorage) {
+  if (localStorage.roboduck_data) {
+    data = JSON.parse(localStorage.roboduck_data);
+  }
+}
+
+function save() {
+  if (localStorage) {
+    localStorage.roboduck_data = JSON.stringify(data);
+  }
+}
+
 var problem = data.problems[0];
 
 function calculateDuckConclusion() {
@@ -92,6 +104,7 @@ function problemOK(id) {
   $("#" + id).after(stepHtml(ctx.step, ctx.prev, addCauses)).remove();
   $("#content").append(stepHtml(addCauses, ctx.step, null));
   wireStep(addCauses);
+  save();
 }
 
 function causesOK(id) {
@@ -116,6 +129,7 @@ function causesOK(id) {
   $("#" + id).after(stepHtml(ctx.step, ctx.prev, addTests)).remove();
   $("#content").append(stepHtml(addTests, ctx.step, null));
   wireStep(addTests);
+  save();
 }
 
 function testsOK(id) {
@@ -140,6 +154,7 @@ function testsOK(id) {
   });
   
   newSuggestion(ctx);
+  save();
 }
 
 function testDone(id, step) {
@@ -156,19 +171,16 @@ function testDone(id, step) {
   
   step.testsAvailable.forEach(function(testID) {
     if (id == testID) {
-      $("#" + id + "_done").addClass("chosen").removeClass("notchosen");
+      $("#" + step.id + "_" + testID + "_done").addClass("chosen").removeClass("notchosen");
     } else {
-      $("#" + id + "_done").addClass("notchosen").removeClass("chosen");
+      $("#" + step.id + "_" + testID + "_done").addClass("notchosen").removeClass("chosen");
     }
   });
   
-  g(step.test).outcomes.forEach(function(outcome) {
-    $("#" + step.id + "_" + outcome.id + "_happened").click(function() {
-      outcomeHappened(outcome, g(id), step);
-    });
-  });
+  wireOutcomesHappened(id, step);
   
   bottom();
+  save();
 }
 
 function outcomeHappened(outcome, test, step) {
@@ -176,6 +188,7 @@ function outcomeHappened(outcome, test, step) {
   test.done = true;
   step.outcome = outcome.id;
   newSuggestion(stepCtx(step.id));
+  save();
 }
 
 function newSuggestion(ctx) {
@@ -190,6 +203,7 @@ function newSuggestion(ctx) {
     problem.steps.push(duckConclusion);
     $("#" + ctx.step.id).after(stepHtml(ctx.step, ctx.prev, duckConclusion)).remove();
     $("#content").append(stepHtml(duckConclusion, ctx.step, null));
+    wireStep(duckConclusion);
     bottom();
   } else {
     var duckSuggestion = {
@@ -245,6 +259,10 @@ var stepWirers = {
     step.testsAvailable.forEach(function(id) {
       $("#" + step.id + "_" + id + "_done").click(function() { testDone(id, step); });
     });
+    wireOutcomesHappened(step.test, step);
+  },
+  "duckConclusion": function(step) {
+    $("#" + step.id + "_newproblem").click(newProblem);
   }
 };
 
@@ -256,6 +274,7 @@ function wireEditingCause(cause, step) {
       step.editingCauses.push(newCause);
       $("#" + step.id + "_table").append(t("editingCause", newCause));
       wireEditingCause(newCause, step);
+      save();
     }
     if (e.keyCode == 13) {
       if (cause.text == "") {
@@ -267,16 +286,19 @@ function wireEditingCause(cause, step) {
           $("#" + (cause.id + 1) + "_input").focus();
         }
       }
+      save();
     }
   });
   
   $("#" + cause.id + "_p").change(function (e) {
     cause.p = $("#" + cause.id + "_p").val();
     cause.pEdited = true;
+    save();
   });
   $("#" + cause.id + "_p").keyup(function (e) {
     if (e.keyCode == 13) {
       $("#" + (cause.id + 1) + "_input").focus();
+      save();
     }
   });
 }
@@ -294,19 +316,23 @@ function wireEditingTest(test, step) {
       }));
       
       wireEditingOutcome(test.outcomes[0], test, step);
+      save();
     }
     if (e.keyCode == 13) {
       $("#" + test.id + "_cost").focus();
+      save();
     }
   });
   
   $("#" + test.id + "_cost").change(function (e) {
     test.cost = $("#" + test.id + "_cost").val();
     test.costEdited = true;
+    save();
   });
   $("#" + test.id + "_cost").keyup(function (e) {
     if (e.keyCode == 13) {
       $("#" + test.outcomes[0].id + "_input").focus();
+      save();
     }
   });
   
@@ -341,9 +367,13 @@ function wireEditingOutcome(outcome, test, step) {
         $("#" + test.id + "_outcomes").after(t("editingTest_buttons", test));
         wireEditingTestButtons(test, step);
       }
+      
+      bottom();
+      save();
     }
     if (e.keyCode == 13) {
       $("#" + (outcome.id + 1) + "_input").focus();
+      save();
     }
   });
   
@@ -362,6 +392,7 @@ function wireEditingEliminatesSection(outcome, test, step) {
         outcome.eliminates.splice(outcome.eliminates.indexOf(cause.id), 1);
         $("#" + outcome.id + "_" + cause.id).removeClass("eliminated");
       }
+      save();
     });
   });
 }
@@ -381,6 +412,16 @@ function wireEditingTestButtons(test, step) {
     $("#" + step.id).append(t("editingTest", newTest));
     wireEditingTest(newTest, step);
     $("#" + newTest.id + "_input").focus();
+    bottom();
+    save();
+  });
+}
+
+function wireOutcomesHappened(id, step) {
+  g(step.test).outcomes.forEach(function(outcome) {
+    $("#" + step.id + "_" + outcome.id + "_happened").click(function() {
+      outcomeHappened(outcome, g(id), step);
+    });
   });
 }
 
@@ -465,7 +506,7 @@ var stepRenderers = {
       }).join("\n"),
       "hasOutcome": step.test != -1,
       "outcomes": step.test == -1 ? null : g(step.test).outcomes.map(function(outcome) {
-        return t("outcomeHappened", outcome, { "chosen": step.outcome == outcome.id, "notchosen": step.outcome != -1 });
+        return t("outcomeHappened", outcome, { "id": step.id + "_" + outcome.id, "chosen": step.outcome == outcome.id, "notchosen": step.outcome != -1 });
       }).join("\n")
     });
   },
@@ -482,4 +523,22 @@ function startDuck() {
       i == problem.steps.length - 1 ? null : problem.steps[i + 1]));
     wireStep(problem.steps[i]);
   }
+}
+
+function newProblem() {
+  data.problems.push({
+    "idCounter": 1,
+    "text": "",
+    "causes": [],
+    "tests": [],
+    "steps": [
+      {
+        "id": 0,
+        "type": "addProblem"
+      }
+    ]
+  });
+  problem = data.problems[data.problems.length - 1];
+  $("#content").html("");
+  startDuck();
 }

@@ -11,56 +11,97 @@
     <script src="duck.js"></script>
   </head>
   <body>
+    <div id="duck">
+      <img src="images/duck.png"/>
+    </div>
+    
     <div id="content"></div>
     
     <script id="t_addProblem" type="text/x-handlebars-template">
-      <div id="{{id}}" class="addProblem step">
+      <div id="{{id}}" class="step">
         <div class="duck">What seems to be the problem?</div>
-        <div id="{{id}}_text">{{text}}</div>
-        <div class="buttons"><span class="button{{#if next}} chosen{{/if}}">OK</span></div>
+        {{#if next}}
+          <div id="{{id}}_text">{{text}}</div>
+        {{else}}
+          <div id="{{id}}_text"><input type="text" id="{{id}}_input"/></div>
+        {{/if}}
+        <div class="buttons"><span id="{{id}}_ok" class="button{{#if next}} chosen{{/if}}">OK</span></div>
       </div>
     </script>
     
     <script id="t_addCauses" type="text/x-handlebars-template">
-      <div class="step">
+      <div id="{{id}}" class="step">
         <div class="duck">What could be causing it?</div>
-        <table id="{{id}}" class="addCauses">
+        <table id="{{id}}_table" class="addCauses">
           {{{causes}}}
         </table>
       
-        <div class="buttons"><span class="button{{#if next}} chosen{{/if}}">Done</span></div>
+        <div class="buttons"><span id="{{id}}_done" class="button{{#if next}} chosen{{/if}}">Done</span></div>
       </div>
     </script>
     
     <script id="t_cause" type="text/x-handlebars-template">
       <tr id="{{id}}" class="cause">
-        <td>{{text}}</td><td>{{weight}}</td>
+        <td class="cause">{{text}}</td><td class="p">{{p}}</td>
+      </tr>
+    </script>
+    
+    <script id="t_editingCause" type="text/x-handlebars-template">
+      <tr id="{{id}}" class="cause">
+        <td class="cause"><input id="{{id}}_input" /></td>
+        <td class="p"><select id="{{id}}_p"><option>Very Likely</option><option selected>Possible</option><option>Unlikely</option><option>Very Unlikely</option></select></td>
       </tr>
     </script>
     
     <script id="t_addTests" type="text/x-handlebars-template">
-      <div class="step">
+      <div id="{{id}}" class="step">
         <div class="duck">OK. What could you do to find out the cause?</div>
-        <div id="{{id}}" class="addTests">
+        <div id="{{id}}_tests" class="addTests">
           {{{tests}}}
         </div>
       </div>
     </script>
     
     <script id="t_test" type="text/x-handlebars-template">
-      <table id="{{id}}_test" class="test">
-        <tr>
-          <td>{{text}}</td>
-          <td>{{cost}}</td>
-        </tr>
-      </table>
+      <div id="{{id}}_test" class="test">
+        <table id="{{id}}_table">
+          <tr>
+            <td class="test">{{text}}</td>
+            <td class="cost">{{cost}}</td>
+          </tr>
+        </table>
       
+        <div class="duck">What outcomes could this have?</div>
+        <div id="{{id}}_outcomes">
+          {{{outcomes}}}
+        </div>
+      </div>
+      
+      <div class="alone"><span class="button{{#if another}} chosen{{/if}}{{#if done}} notchosen{{/if}}">Or I could check...</span></div>
+      <div class="alone"><span class="button{{#if done}} chosen{{/if}}{{#if another}} notchosen{{/if}}">That is all the tests I can think of</span></div>
+    </script>
+    
+    <script id="t_editingTest" type="text/x-handlebars-template">
+      <div id="{{id}}_test" class="test">
+        <table id="{{id}}_table">
+          <tr>
+            <td class="test"><input id="{{id}}_input" type="text"/></td>
+            <td class="cost"><select id="{{id}}_cost"><option>Quick Check</option><option selected>About 5 Minutes</option><option>About 10 Minutes</option><option>Half an Hour</option><option>An Hour</option><option>Several Hours</option><option>A Day</option><option>Days</option></select></td>
+          </tr>
+        </table>
+      </div>
+    </script>
+    
+    <script id="t_editingTest_outcomes" type="text/x-handlebars-template">
       <div class="duck">What outcomes could this have?</div>
       <div id="{{id}}_outcomes">
         {{{outcomes}}}
       </div>
-      
-      <div class="buttons"><span class="button{{#if done}} chosen{{/if}}{{#if another}} notchosen{{/if}}">Done</span> <span class="button{{#if another}} chosen{{/if}}{{#if done}} notchosen{{/if}}">It could also be...</span></div>
+    </script>
+
+    <script id="t_editingTest_buttons" type="text/x-handlebars-template">
+      <div class="alone"><span id="{{id}}_or" class="button">Or I could check...</span></div>
+      <div class="alone"><span id="{{id}}_done" class="button">That is all the tests I can think of</span></div>
     </script>
     
     <script id="t_outcome" type="text/x-handlebars-template">
@@ -73,30 +114,54 @@
       </div>
     </script>
     
-    <script id="t_eliminates" type="text/x-handlebars-template">
-      <li class="{{#if eliminated}}eliminated{{/if}}">{{text}}</li>
-    </script>
-
-    <script id="t_testDone" type="text/x-handlebars-template">
-      <div class="step">
-        {{{tests}}}
-        {{#if hasOutcome}}
-        <div class="duck">What was the outcome?</div>
-        {{{outcomes}}}
-        {{/if}}
+    <script id="t_editingOutcome" type="text/x-handlebars-template">
+      <div id="{{id}}" class="outcome">
+        <div><input id="{{id}}_input" type="text"/></div>
       </div>
     </script>
     
+    <script id="t_editingEliminatesSection" type="text/x-handlebars-template">
+      <div class="duck">Which would eliminate which causes?</div>
+      <ul id="{{id}}_eliminations" class="eliminations">
+        {{{eliminations}}}
+      </ul>
+    </script>
+    
+    <script id="t_eliminates" type="text/x-handlebars-template">
+      <li id="{{id}}" class="{{#if eliminated}}eliminated{{/if}}">{{text}}</li>
+    </script>
+    
+    <script id="t_editingEliminates" type="text/x-handlebars-template">
+      <li id="{{id}}" class="editingEliminates {{#if eliminated}}eliminated{{/if}}">{{text}}</li>
+    </script>
+
+    <script id="t_testDone" type="text/x-handlebars-template">
+      <div id="{{id}}" class="step">
+        {{{tests}}}
+        <div id="{{id}}_outcomes">
+          {{#if hasOutcome}}
+            <div class="duck">What was the outcome?</div>
+            {{{outcomes}}}
+          {{/if}}
+        </div>
+      </div>
+    </script>
+    
+    <script id="t_testDone_outcomes" type="text/x-handlebars-template">
+      <div class="duck">What was the outcome?</div>
+      {{{outcomes}}}
+    </script>
+    
     <script id="t_doneTest" type="text/x-handlebars-template">
-      <div class="alone"><span class="button{{#if chosen}} chosen{{/if}}{{#if notchosen}} notchosen{{/if}}">{{text}}</span></div>
+      <div class="alone"><span id="{{id}}_done" class="button{{#if chosen}} chosen{{/if}}{{#if notchosen}} notchosen{{/if}}">{{text}}</span></div>
     </script>
     
     <script id="t_outcomeHappened" type="text/x-handlebars-template">
-      <div class="alone"><span class="button{{#if chosen}} chosen{{/if}}{{#if notchosen}} notchosen{{/if}}">{{text}}</span></div>
+      <div class="alone"><span id="{{id}}_happened" class="button{{#if chosen}} chosen{{/if}}{{#if notchosen}} notchosen{{/if}}">{{text}}</span></div>
     </script>
     
     <script id="t_duckSuggestion" type="text/x-handlebars-template">
-      <div class="step">
+      <div id="{{id}}" class="step">
         <div id="{{id}}" class="duckSuggestion duck">
           You should: {{test.text}}
         </div>
@@ -104,7 +169,7 @@
     </script>
     
     <script id="t_duckConclusion" type="text/x-handlebars-template">
-      <div class="step">
+      <div id="{{id}}" class="step">
         <div id="{{id}}" class="duckConclusion duck">
           {{cause.text}}
         </div>

@@ -5,34 +5,35 @@ var es =
       "idCounter": 16,
       "text": "My computer won't start up.",
       "causes": [
-        { "id": 0, "text": "The power cord is unplugged.", "weight": 10 },
-        { "id": 1, "text": "The power supply exploded.",   "weight": 1  }
+        { "id": 0, "text": "The power cord is unplugged.", "p": 10 },
+        { "id": 1, "text": "The power supply exploded.",   "p": 1  }
       ],
       "tests": [
         {
           "id": 2,
           "text": "Check the power cord is plugged in.",
-          "cost" : 1,
+          "cost": 1,
+          "done": true,
           "outcomes": [
-            { "id": 3, "text": "Yes", "eliminates": [ 0 ] },
+            { "id": 3, "text": "Yes", "eliminates": [ 0 ], "happened": true },
             { "id": 4, "text": "No",  "eliminates": []    }
           ]
         },
         {
           "id": 5,
           "text": "Disassemble machine and check PSU.",
-          "cost" : 10,
+          "cost": 10,
+          "done": true,
           "outcomes": [
-            { "id": 6, "text": "PSU Exploded", "eliminates": [ 1 ] },
-            { "id": 7, "text": "PSU Fine",     "eliminates": []    },
+            { "id": 6, "text": "PSU Exploded", "eliminates": []   , "happened": true },
+            { "id": 7, "text": "PSU Fine",     "eliminates": [ 1 ]    },
           ]
         }
       ],
       "steps": [
         {
           "id": 8,
-          "type": "addProblem",
-          "text": "My computer won't start up."
+          "type": "addProblem"
         },
         {
           "id": 9,

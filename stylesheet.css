@@ -6,9 +6,20 @@ body {
   line-height: 135%;
 }
 
+a {
+  color: #4d4b49;
+}
+
+a:hover {
+  color: #999591;
+}
+
 #duck {
+  width: 600px;
   text-align: center;
-  margin: 1em;
+  margin: auto;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
 }
 
 .duck {
@@ -23,7 +34,7 @@ table, ul, li, tr, td {
   list-style: none;
 }
 
-li {
+step li {
   margin-left: 1em;
 }
 
@@ -37,6 +48,43 @@ td {
 }
 
 .editingEliminates {
+  cursor: pointer;
+}
+
+#menu {
+  font-size: 14px;
+  width: 200px;
+  position: fixed;
+  z-index: 1;
+  padding: 0.5em;
+  padding-left: 1em;
+  padding-right: 1.5em;
+  padding-bottom: 0.5em;
+  border-radius: 12px;
+  margin-bottom: 1em;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(192, 192, 192, 0.8);
+}
+
+#menu:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid #c0c0c0;
+}
+
+#menuContents {
+  display: none;
+}
+
+#menu:hover #menuContents {
+  display: block;
+}
+
+.selectedMenu {
+  color: #4d4b49;
+  font-weight: bold;
+}
+
+.notSelectedMenu {
   cursor: pointer;
 }
 

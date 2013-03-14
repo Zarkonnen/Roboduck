@@ -2,6 +2,7 @@ var DEFAULT_LIKELIHOOD = "Possible";
 var DEFAULT_COST = "About 10 Minutes";
 
 var data = {
+  "currentProblem": 0,
   "problems": [
     {
       "idCounter": 1,
@@ -30,7 +31,7 @@ function save() {
   }
 }
 
-var problem = data.problems[0];
+var problem = data.problems[data.currentProblem || 0];
 
 function calculateDuckConclusion() {
   return findTestsAvailable().length == 0 ? problem.causes[0].id : null; // qqDPS NEED THE ALGORITHM! :P
@@ -105,6 +106,7 @@ function problemOK(id) {
   $("#content").append(stepHtml(addCauses, ctx.step, null));
   wireStep(addCauses);
   save();
+  updateMenu();
 }
 
 function causesOK(id) {
@@ -224,6 +226,7 @@ function newSuggestion(ctx) {
     problem.steps.push(testDone);
     $("#content").append(stepHtml(testDone, duckSuggestion, null));
     wireStep(testDone);
+    bottom();
   }
 }
 
@@ -363,7 +366,8 @@ function wireEditingOutcome(outcome, test, step) {
       $("#" + outcome.id).after(t("editingOutcome", newOutcome));
       wireEditingOutcome(newOutcome, test, step);
       
-      if (test.outcomes.length == 3) {
+      if (test.outcomes.length == 3 && !test.buttons) {
+        test.buttons = true;
         $("#" + test.id + "_outcomes").after(t("editingTest_buttons", test));
         wireEditingTestButtons(test, step);
       }
@@ -471,15 +475,15 @@ var stepRenderers = {
           if (test.outcomes.length > 0) {
             html += t("editingTest_outcomes", test, {
               "outcomes": test.outcomes.map(function(outcome) {
-                var html = t("editingOutcome", outcome);
+                var eliminatesSection = "";
                 if (outcome.text.length > 0) {
-                  html += t("editingEliminatesSection", outcome, {
+                  eliminatesSection = t("editingEliminatesSection", outcome, {
                     "eliminations": problem.causes.map(function(cause) {
                       return t("editingEliminates", cause, { "id": outcome.id + "_" + cause.id, "eliminated": outcome.eliminates.indexOf(cause.id) != -1 });
                     }).join("\n")
                   });
                 }
-                return html;
+                return t("editingOutcome", outcome, { "eliminatesSection": eliminatesSection });
               }).join("\n")
             });
             
@@ -516,6 +520,11 @@ var stepRenderers = {
 };
 
 function startDuck() {
+  restartDuck();
+}
+
+function restartDuck() {
+  $("#content").html("");
   for (var i = 0; i < problem.steps.length; i++) {
     $("#content").append(stepHtml(
       problem.steps[i],
@@ -523,6 +532,27 @@ function startDuck() {
       i == problem.steps.length - 1 ? null : problem.steps[i + 1]));
     wireStep(problem.steps[i]);
   }
+  
+  updateMenu();
+}
+
+function updateMenu() {
+  $("#menuContents").html(t("menu", data, {
+    "problems": data.problems.map(function(p) {
+      return t("menuProblem", p, { "id": data.problems.indexOf(p), "selected": problem == p });
+    }).join("\n")
+  }));
+  
+  data.problems.forEach(function(p) {
+    $("#problem_" + data.problems.indexOf(p)).click(function() { switchToProblem(data.problems.indexOf(p)); });
+  });
+}
+
+function switchToProblem(id) {
+  data.currentProblem = id;
+  problem = data.problems[data.currentProblem];
+  restartDuck();
+  save();
 }
 
 function newProblem() {
@@ -538,7 +568,8 @@ function newProblem() {
       }
     ]
   });
-  problem = data.problems[data.problems.length - 1];
-  $("#content").html("");
-  startDuck();
+  data.currentProblem = data.problems.length - 1;
+  problem = data.problems[data.currentProblem];
+  restartDuck();
+  save();
 }

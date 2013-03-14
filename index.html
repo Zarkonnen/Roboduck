@@ -11,11 +11,31 @@
     <script src="duck.js"></script>
   </head>
   <body>
+    <div id="menu"><div id="menuContents"></div></div>
+    
     <div id="duck">
       <img src="images/duck.png"/>
     </div>
     
     <div id="content"></div>
+    
+    <script id="t_menu" type="text/x-handlebars-template">
+      <a href="https://github.com/Zarkonnen/Roboduck/">Roboduck</a> by <a href="mailto:david.stark@zarkonnen.com">David Stark</a><br>
+      <ul id="problem_list">
+        {{{problems}}}
+      </ul>
+    </script>
+    
+    <script id="t_menuProblem" type="text/x-handlebars-template">
+      <li id="problem_{{id}}" class="
+        {{#if selected}}
+          selectedMenu
+        {{else}}
+          notSelectedMenu
+        {{/if}}">
+        {{text}}
+      </li>
+    </script>
     
     <script id="t_addProblem" type="text/x-handlebars-template">
       <div id="{{id}}" class="step">
@@ -23,7 +43,7 @@
         {{#if next}}
           <div id="{{id}}_text">{{text}}</div>
         {{else}}
-          <div id="{{id}}_text"><input type="text" id="{{id}}_input"/></div>
+          <div id="{{id}}_text"><input type="text" id="{{id}}_input" value="{{text}}"/></div>
         {{/if}}
         <div class="buttons"><span id="{{id}}_ok" class="button{{#if next}} chosen{{/if}}">OK</span></div>
       </div>
@@ -48,7 +68,7 @@
     
     <script id="t_editingCause" type="text/x-handlebars-template">
       <tr id="{{id}}" class="cause">
-        <td class="cause"><input id="{{id}}_input" /></td>
+        <td class="cause"><input id="{{id}}_input" value="{{text}}"/></td>
         <td class="p"><select id="{{id}}_p"><option>Very Likely</option><option selected>Possible</option><option>Unlikely</option><option>Very Unlikely</option></select></td>
       </tr>
     </script>
@@ -85,7 +105,7 @@
       <div id="{{id}}_test" class="test">
         <table id="{{id}}_table">
           <tr>
-            <td class="test"><input id="{{id}}_input" type="text"/></td>
+            <td class="test"><input id="{{id}}_input" type="text" value="{{text}}"/></td>
             <td class="cost"><select id="{{id}}_cost"><option>Quick Check</option><option selected>About 5 Minutes</option><option>About 10 Minutes</option><option>Half an Hour</option><option>An Hour</option><option>Several Hours</option><option>A Day</option><option>Days</option></select></td>
           </tr>
         </table>
@@ -116,7 +136,8 @@
     
     <script id="t_editingOutcome" type="text/x-handlebars-template">
       <div id="{{id}}" class="outcome">
-        <div><input id="{{id}}_input" type="text"/></div>
+        <div><input id="{{id}}_input" type="text" value="{{text}}"/></div>
+        {{{eliminatesSection}}}
       </div>
     </script>
     

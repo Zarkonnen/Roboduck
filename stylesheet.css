@@ -6,6 +6,10 @@ body {
   line-height: 135%;
 }
 
+pre {
+  font-size: 11px;
+}
+
 a {
   color: #4d4b49;
 }
@@ -145,7 +149,7 @@ div.outcome, div.test {
 }
 
 .button:hover {
-  background: #eeeeee;
+  background: #efeeed;
 }
 
 .notchosen {
@@ -179,4 +183,17 @@ td.test {
 }
 
 td.cost {
+}
+
+#todo {
+  float: right;
+  margin-right: 10px;
+  color: #bbbbbb;
+  height: 20px;
+  overflow: hidden;
+}
+
+#todo:hover {
+  color: black;
+  height: 400px;
 }

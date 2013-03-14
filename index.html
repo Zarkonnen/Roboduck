@@ -11,6 +11,19 @@
     <script src="duck.js"></script>
   </head>
   <body>
+    <pre id="todo">
+    TODO:
+    - Non-local storage
+    - Adding in a new test or cause at any point
+    - Actually correct algo
+    - Make "eliminate" more fine-grained?
+    -- Eliminate
+    -- Less Likely
+    -- More Likely
+    -- Confirm
+    - Ability to attach files and links to steps
+    - Ability to share/view stories
+    </pre>
     <div id="menu"><div id="menuContents"></div></div>
     
     <div id="duck">
@@ -21,7 +34,7 @@
     
     <script id="t_menu" type="text/x-handlebars-template">
       <a href="https://github.com/Zarkonnen/Roboduck/">Roboduck</a> by <a href="mailto:david.stark@zarkonnen.com">David Stark</a><br>
-      <span id="newProblem" class="button">New</span>
+      <div class="alone"><span id="newProblem" class="button">New</span></div>
       <ul id="problem_list">
         {{{problems}}}
       </ul>

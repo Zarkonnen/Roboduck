@@ -21,6 +21,7 @@
     
     <script id="t_menu" type="text/x-handlebars-template">
       <a href="https://github.com/Zarkonnen/Roboduck/">Roboduck</a> by <a href="mailto:david.stark@zarkonnen.com">David Stark</a><br>
+      <span id="newProblem" class="button">New</span>
       <ul id="problem_list">
         {{{problems}}}
       </ul>
@@ -51,7 +52,7 @@
     
     <script id="t_addCauses" type="text/x-handlebars-template">
       <div id="{{id}}" class="step">
-        <div class="duck">What could be causing it?</div>
+        <div class="duck">{{#if first}}What could be causing it?{{else}}What other causes can you think of?{{/if}}</div>
         <table id="{{id}}_table" class="addCauses">
           {{{causes}}}
         </table>
@@ -69,13 +70,13 @@
     <script id="t_editingCause" type="text/x-handlebars-template">
       <tr id="{{id}}" class="cause">
         <td class="cause"><input id="{{id}}_input" value="{{text}}"/></td>
-        <td class="p"><select id="{{id}}_p"><option>Very Likely</option><option selected>Possible</option><option>Unlikely</option><option>Very Unlikely</option></select></td>
+        <td class="p"><select id="{{id}}_p"><option>Very Likely</option><option>Likely</option><option selected>Possible</option><option>Unlikely</option><option>Very Unlikely</option></select></td>
       </tr>
     </script>
     
     <script id="t_addTests" type="text/x-handlebars-template">
       <div id="{{id}}" class="step">
-        <div class="duck">OK. What could you do to find out the cause?</div>
+        <div class="duck">{{#if first}}OK. What could you do to find out the cause?{{else}}What else could you do to find out the cause?{{/if}}</div>
         <div id="{{id}}_tests" class="addTests">
           {{{tests}}}
         </div>
@@ -191,10 +192,18 @@
     
     <script id="t_duckConclusion" type="text/x-handlebars-template">
       <div id="{{id}}" class="step">
-        <div id="{{id}}" class="duckConclusion duck">
+        <div id="{{id}}_text" class="duckConclusion duck">
           {{cause.text}}
         </div>
         <div class="alone"><span id="{{id}}_newproblem" class="button">I have another problem...</span></div>
+      </div>
+    </script>
+    
+    <script id="t_duckMessage" type="text/x-handlebars-template">
+      <div id="{{id}}" class="step">
+        <div class="duckMessage duck">
+          {{{text}}}
+        </div>
       </div>
     </script>
     

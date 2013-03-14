@@ -1,5 +1,7 @@
 var DEFAULT_LIKELIHOOD = "Possible";
 var DEFAULT_COST = "About 10 Minutes";
+var UNCLEAR = "unclear";
+var ALL_POSSIBILITIES_ELIMINATED = "all_eliminated";
 
 var data = {
   "currentProblem": 0,
@@ -34,11 +36,81 @@ function save() {
 var problem = data.problems[data.currentProblem || 0];
 
 function calculateDuckConclusion() {
-  return findTestsAvailable().length == 0 ? problem.causes[0].id : null; // qqDPS NEED THE ALGORITHM! :P
+  var causes = findCausesRemaining();
+  if (causes.length == 1) {
+    return causes[0];
+  }
+  if (causes.length == 0) {
+    return ALL_POSSIBILITIES_ELIMINATED;
+  }
+  if (findTestsAvailable().length == 0) {
+    return UNCLEAR;
+  }
+  return null;
 }
 
 function calculateDuckSuggestion() {
-  return findTestsAvailable()[0]; // qqDPS NEED THE ALGORITHM! :P
+  var best = -1;
+  var bestQuality = -1;
+  var causes = findCausesRemaining();
+  findTestsAvailable().forEach(function(id) {
+    var q = testQuality(g(id), causes);
+    if (q > bestQuality) {
+      best = id;
+      bestQuality = q;
+    }
+  });
+  return best;
+}
+
+function cost(costName) {
+  return {
+    "Quick Check": 3,
+    "About 5 Minutes": 5,
+    "About 10 Minutes": 10,
+    "Half an Hour": 30,
+    "An Hour": 60,
+    "Several Hours": 180,
+    "A Day": 7 * 60,
+    "Days": 3 * 7 * 60
+  }[costName];
+}
+
+function probabilityWeight(p) {
+  return {
+    "Very Likely": 81,
+    "Likely": 27,
+    "Possible": 9,
+    "Unlikely": 3,
+    "Very Unlikely": 1
+  }[p];
+}
+
+function testQuality(test, causes) {
+  var q = 0;
+  test.outcomes.forEach(function(outcome) {
+    causes.forEach(function(causeId) {
+      var cause = g(causeId);
+      if (outcome.eliminates.indexOf(cause) != -1) {
+        q += probabilityWeight(cause.p);
+      }
+    });
+  });
+  
+  return q * 1.0 / test.outcomes.length / cost(test.cost);
+}
+
+function findCausesRemaining() {
+  var ids = [];
+  problem.causes.forEach(function(cause) {
+    var remains = !problem.tests.some(function(test) {
+      return test.outcomes.some(function(outcome) {
+        return outcome.happened && outcome.eliminates.indexOf(cause.id) != -1;
+      });
+    });
+    if (remains) { ids.push(cause.id); }
+  });
+  return ids;
 }
 
 function findTestsAvailable() {
@@ -92,6 +164,11 @@ function problemOK(id) {
   var text = $("#" + id + "_input").val();
   if (text == "") { return; }
   problem.text = text;
+  addCausesStep(ctx, id);
+  updateMenu();
+}
+
+function addCausesStep(ctx, id) {
   var addCauses = {
     "type": "addCauses",
     "id": problem.idCounter++,
@@ -106,26 +183,29 @@ function problemOK(id) {
   $("#content").append(stepHtml(addCauses, ctx.step, null));
   wireStep(addCauses);
   save();
-  updateMenu();
 }
 
 function causesOK(id) {
   var ctx = stepCtx(id);
   if (ctx.next) { return; }
-  if (ctx.step.editingCauses.every(function(cause) { return cause.text == ""; })) { return; }
+  if (findCausesRemaining().length == 0 && ctx.step.editingCauses.every(function(cause) { return cause.text == ""; })) { return; }
   ctx.step.editingCauses.forEach(function(cause) {
     if (cause.text == "") { return; }
     problem.causes.push(cause);
     ctx.step.causes.push(cause.id);
   });
-  
+  addTestsStep(ctx, id);
+}
+
+function addTestsStep(ctx, id) {
   var addTests = {
     "type": "addTests",
     "id": problem.idCounter++,
     "tests": [],
     "editingTests": [
       { "id": problem.idCounter++, "text": "", "cost": DEFAULT_COST, "outcomes": [] }
-    ]
+    ],
+    "causesAvailable": findCausesRemaining()
   };
   problem.steps.push(addTests);
   $("#" + id).after(stepHtml(ctx.step, ctx.prev, addTests)).remove();
@@ -157,6 +237,7 @@ function testsOK(id) {
   
   newSuggestion(ctx);
   save();
+  bottom();
 }
 
 function testDone(id, step) {
@@ -181,8 +262,8 @@ function testDone(id, step) {
   
   wireOutcomesHappened(id, step);
   
-  bottom();
   save();
+  bottom();
 }
 
 function outcomeHappened(outcome, test, step) {
@@ -191,21 +272,40 @@ function outcomeHappened(outcome, test, step) {
   step.outcome = outcome.id;
   newSuggestion(stepCtx(step.id));
   save();
+  bottom();
 }
 
 function newSuggestion(ctx) {
   var conc = calculateDuckConclusion();
   
   if (conc) {
-    var duckConclusion = {
-      "type": "duckConclusion",
-      "id": problem.idCounter++,
-      "cause": conc
-    };
-    problem.steps.push(duckConclusion);
-    $("#" + ctx.step.id).after(stepHtml(ctx.step, ctx.prev, duckConclusion)).remove();
-    $("#content").append(stepHtml(duckConclusion, ctx.step, null));
-    wireStep(duckConclusion);
+    if (conc == UNCLEAR) {
+      var duckMessage = { "type": "duckMessage", "id": problem.idCounter++ };
+      duckMessage.text = "It's unclear. It could be:<br/>\n";
+      findCausesRemaining().forEach(function(id) {
+        duckMessage.text += g(id).text + "<br/>\n";
+      });
+      problem.steps.push(duckMessage);
+      $("#" + ctx.step.id).after(stepHtml(ctx.step, ctx.prev, duckMessage)).remove();
+      $("#content").append(stepHtml(duckMessage, ctx.step, null));
+      addTestsStep(ctx, ctx.step.id);
+    } else if (conc == ALL_POSSIBILITIES_ELIMINATED) {
+      var duckMessage = { "type": "duckMessage", "id": problem.idCounter++, "text": "Oh dear. We've eliminated all possibilities." };
+      problem.steps.push(duckMessage);
+      $("#" + ctx.step.id).after(stepHtml(ctx.step, ctx.prev, duckMessage)).remove();
+      $("#content").append(stepHtml(duckMessage, ctx.step, null));
+      addCausesStep(ctx, ctx.step.id);
+    } else {
+      var duckConclusion = {
+        "type": "duckConclusion",
+        "id": problem.idCounter++,
+        "cause": conc
+      };
+      problem.steps.push(duckConclusion);
+      $("#" + ctx.step.id).after(stepHtml(ctx.step, ctx.prev, duckConclusion)).remove();
+      $("#content").append(stepHtml(duckConclusion, ctx.step, null));
+      wireStep(duckConclusion);
+    }
     bottom();
   } else {
     var duckSuggestion = {
@@ -236,7 +336,9 @@ function wireStep(step) {
 }
 
 function bottom() {
-  window.scrollTo(0, document.body.scrollHeight);
+  setTimeout(function() {
+    window.scrollTo(0, document.body.scrollHeight);
+  }, 100);
 }
 
 var stepWirers = {
@@ -262,11 +364,14 @@ var stepWirers = {
     step.testsAvailable.forEach(function(id) {
       $("#" + step.id + "_" + id + "_done").click(function() { testDone(id, step); });
     });
-    wireOutcomesHappened(step.test, step);
+    if (step.test != -1) {
+      wireOutcomesHappened(step.test, step);
+    }
   },
   "duckConclusion": function(step) {
     $("#" + step.id + "_newproblem").click(newProblem);
-  }
+  },
+  "duckMessage": function() {}
 };
 
 function wireEditingCause(cause, step) {
@@ -320,6 +425,7 @@ function wireEditingTest(test, step) {
       
       wireEditingOutcome(test.outcomes[0], test, step);
       save();
+      bottom();
     }
     if (e.keyCode == 13) {
       $("#" + test.id + "_cost").focus();
@@ -353,7 +459,8 @@ function wireEditingOutcome(outcome, test, step) {
       outcome.eliminatesShowing = true;
       
       $("#" + outcome.id).append(t("editingEliminatesSection", outcome, {
-        "eliminations": problem.causes.map(function(cause) {
+        "eliminations": step.causesAvailable.map(function(id) {
+          var cause = g(id);
           return t("editingEliminates", cause, { "id": outcome.id + "_" + cause.id, "eliminated": false });
         }).join("\n")
       }));
@@ -433,6 +540,14 @@ function stepHtml(step, prev, next) {
   return stepRenderers[step.type](step, prev, next);
 }
 
+function firstOfType(step) {
+  for (var i = 0; i < problem.steps.length; i++) {
+    if (problem.steps[i] == step) { return true; }
+    if (problem.steps[i].type == step.type) { return false; }
+  }
+  return true;
+}
+
 var stepRenderers = {
   "addProblem": function(step, prev, next) {
     return t("addProblem", step, { "text": problem.text, "next": next });
@@ -440,6 +555,7 @@ var stepRenderers = {
   "addCauses": function(step, prev, next) {
     return t("addCauses", step, {
       "next": next,
+      "first": firstOfType(step),
       "causes":
         next
         ? step.causes.map(function(id) {
@@ -453,6 +569,7 @@ var stepRenderers = {
   "addTests": function(step, prev, next) {
     if (next) {
       return t("addTests", step, {
+        "first": firstOfType(step),
         "tests": step.tests.map(function(id) {
           var test = g(id);
           return t("test", test, {
@@ -460,7 +577,8 @@ var stepRenderers = {
             "done": step.tests.indexOf(id) == step.tests.length - 1,
             "outcomes": test.outcomes.map(function(outcome) {
               return t("outcome", outcome, {
-                "eliminations": problem.causes.map(function(cause) {
+                "eliminations": step.causesAvailable.map(function(id) {
+                  var cause = g(id);
                   return t("eliminates", cause, { "id": outcome.id + "_" + cause.id, "eliminated": outcome.eliminates.indexOf(cause.id) != -1 });
                 }).join("\n")
               });
@@ -470,6 +588,7 @@ var stepRenderers = {
       });
     } else {
       return t("addTests", step, {
+        "first": firstOfType(step),
         "tests": step.editingTests.map(function(test) {
           var html = t("editingTest", test);
           if (test.outcomes.length > 0) {
@@ -478,7 +597,8 @@ var stepRenderers = {
                 var eliminatesSection = "";
                 if (outcome.text.length > 0) {
                   eliminatesSection = t("editingEliminatesSection", outcome, {
-                    "eliminations": problem.causes.map(function(cause) {
+                    "eliminations": step.causesAvailable.map(function(id) {
+                      var cause = g(id);
                       return t("editingEliminates", cause, { "id": outcome.id + "_" + cause.id, "eliminated": outcome.eliminates.indexOf(cause.id) != -1 });
                     }).join("\n")
                   });
@@ -516,6 +636,9 @@ var stepRenderers = {
   },
   "duckConclusion": function(step) {
     return t("duckConclusion", step, { "cause": g(step.cause) });
+  },
+  "duckMessage": function(step) {
+    return t("duckMessage", step);
   }
 };
 
@@ -546,6 +669,8 @@ function updateMenu() {
   data.problems.forEach(function(p) {
     $("#problem_" + data.problems.indexOf(p)).click(function() { switchToProblem(data.problems.indexOf(p)); });
   });
+  
+  $("#newProblem").click(newProblem);
 }
 
 function switchToProblem(id) {

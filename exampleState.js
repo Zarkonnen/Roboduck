@@ -12,7 +12,7 @@ var es =
         {
           "id": 2,
           "text": "Check the power cord is plugged in.",
-          "cost": 1,
+          "cost": "Days",
           "done": true,
           "outcomes": [
             { "id": 3, "text": "Yes", "eliminates": [ 0 ], "happened": true },
@@ -22,7 +22,7 @@ var es =
         {
           "id": 5,
           "text": "Disassemble machine and check PSU.",
-          "cost": 10,
+          "cost": "Days",
           "done": true,
           "outcomes": [
             { "id": 6, "text": "PSU Exploded", "eliminates": []   , "happened": true },

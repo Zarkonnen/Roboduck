@@ -1,6 +1,30 @@
+@charset "UTF-8";
+
+@font-face {
+  font-family: 'webfont';
+  src: url('webfont.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.icon-cog:before { content: '\2699'; } /* '⚙' */
+.icon-cancel:before, .close:before { content: '\2715'; } /* '✕' */
+.icon-plus-circle:before { content: '\2795'; } /* '➕' */
+.icon-minus-circle:before { content: '\2796'; } /* '➖' */
+.icon-picture:before { content: '\e060'; } /* '' */
+.icon-pencil:before { content: '\e068'; } /* '' */
+.icon-clipboard:before { content: '\e07f'; } /* '' */
+.icon-up:before { content: '\e0ae'; } /* '' */
+.icon-right:before { content: '\e0af'; } /* '' */
+.icon-doc-new:before { content: '\e0bd'; } /* '' */
+.icon-left:before { content: '\e0d4'; } /* '' */
+.icon-down:before { content: '\e0d5'; } /* '' */
+.icon-attach:before { content: ''; } /* '\1f4ce' */
+.icon-link:before { content: ''; } /* '\1f517' */
+
 body {
   font-size: 16px;
-  font-family: Courier;
+  font-family: Courier, 'webfont';
   background: url('images/bg.png');
   color: black;
   line-height: 135%;
@@ -92,6 +116,16 @@ td {
   cursor: pointer;
 }
 
+#export, #import {
+  position: fixed;
+  border-radius: 12px;
+  top: 30px;
+  left: 300px;
+  z-index: 2;
+  padding: 0.5em;
+  background: white;
+}
+
 #content {
   width: 600px;
   margin: auto;
@@ -140,6 +174,30 @@ div.outcome, div.test {
   background: #bbbbbb;
   cursor: pointer;
   color: #333333;
+}
+
+.icon {
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+}
+
+.icon .text {
+  display: none;
+}
+
+.icon:hover .text {
+  display: inline;
+  margin-left: 0.5em;
+}
+
+.close {
+  cursor: pointer;
+  padding-top: 2em;
+}
+
+#doImport {
+  position: relative;
+  top: -0.2em;
 }
 
 .alone {

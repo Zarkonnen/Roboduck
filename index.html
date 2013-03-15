@@ -11,21 +11,15 @@
     <script src="duck.js"></script>
   </head>
   <body>
-    <pre id="todo">
+    <!--<pre id="todo">
     TODO:
     - Non-local storage
     - Adding in a new test or cause at any point
     - Actually correct algo
-    - Make "eliminate" more fine-grained?
-    -- Eliminate
-    -- Less Likely
-    -- More Likely
-    -- Confirm
     - Ability to attach files and links to steps
     - Ability to share/view stories
     - Notes
-    - JSON import/export
-    </pre>
+    </pre>-->
     <div id="menu"><div id="menuContents"></div></div>
     
     <div id="duck">
@@ -36,7 +30,11 @@
     
     <script id="t_menu" type="text/x-handlebars-template">
       <a href="https://github.com/Zarkonnen/Roboduck/">Roboduck</a> by <a href="mailto:david.stark@zarkonnen.com">David Stark</a><br>
-      <div class="alone"><span id="newProblem" class="button">New</span></div>
+      <div class="buttons">
+        <span id="newProblem" class="button icon icon-doc-new"><span class="text">New</span></span>
+        <span id="exportProblem" class="button icon icon-down"><span class="text">JSON Export</span></span>
+        <span id="importProblem" class="button icon icon-up"><span class="text">JSON Import</span></span>
+      </div>
       <ul id="problem_list">
         {{{problems}}}
       </ul>
@@ -51,6 +49,24 @@
         {{/if}}">
         {{text}}
       </li>
+    </script>
+    
+    <script id="t_export" type="text/x-handlebars-template">
+      <div id="export">
+        <span id="closeExport" class="close"></span>
+        <div>
+          <textarea id="exportContent" rows="40" cols="60">{{{json}}}</textarea>
+        </div>
+      </div>
+    </script>
+    
+    <script id="t_import" type="text/x-handlebars-template">
+      <div id="import">
+        <span id="closeImport" class="close"></span> <span id="doImport" class="button">Import</span>
+        <div>
+          <textarea id="importContent" rows="40" cols="60"></textarea>
+        </div>
+      </div>
     </script>
     
     <script id="t_addProblem" type="text/x-handlebars-template">

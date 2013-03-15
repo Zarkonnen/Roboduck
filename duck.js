@@ -695,6 +695,8 @@ function updateMenu() {
   });
   
   $("#newProblem").click(newProblem);
+  $("#exportProblem").click(exportProblem);
+  $("#importProblem").click(importProblem);
 }
 
 function switchToProblem(id) {
@@ -721,4 +723,37 @@ function newProblem() {
   problem = data.problems[data.currentProblem];
   restartDuck();
   save();
+}
+
+function exportProblem() {
+  $("#export").remove();
+  $("#import").remove();
+  $("#content").append(t("export", null, { "json": JSON.stringify(problem, null, "  ") }));
+  $("#closeExport").click(function() { $("#export").remove(); });
+  $("#exportContent").focus();
+  $("#exportContent")[0].selectionStart = 0;
+  $("#exportContent")[0].selectionEnd = $("#exportContent").val().length;
+}
+
+function importProblem() {
+  $("#export").remove();
+  $("#import").remove();
+  $("#content").append(t("import"));
+  $("#closeImport").click(function() { $("#import").remove(); });
+  $("#doImport").click(function() {
+    var success = false;
+    try {
+      data.problems.push(JSON.parse($("#importContent").val()));
+      success = true;
+    } catch (e) {
+      alert("Unable to import: " + e);
+    }
+    if (success) {
+      data.currentProblem = data.problems.length - 1;
+      problem = data.problems[data.currentProblem];
+      restartDuck();
+      save();
+    }
+  });
+  $("#importContent").focus();
 }

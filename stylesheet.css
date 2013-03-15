@@ -83,7 +83,7 @@ td {
   font-size: 14px;
   width: 200px;
   position: fixed;
-  z-index: 1;
+  z-index: 5;
   padding: 0.5em;
   padding-left: 1em;
   padding-right: 1.5em;
@@ -121,7 +121,7 @@ td {
   border-radius: 12px;
   top: 30px;
   left: 300px;
-  z-index: 2;
+  z-index: 10;
   padding: 0.5em;
   background: white;
 }
@@ -155,6 +155,7 @@ div.step, div.outcome, div.test {
 
 div.step {
   background: url('images/bg_light.png');
+  position: relative;
 }
 
 div.outcome, div.test {
@@ -258,4 +259,45 @@ td.cost {
 #todo:hover {
   color: black;
   height: 400px;
+}
+
+.note:hover, .note textarea {
+  background-color: #e5e011;
+}
+
+.note {
+  border: 1px solid #cccc00;
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+
+.note textarea {
+  border: none;
+  resize: none;
+  display: none;
+  height: 100%;
+}
+
+.note {
+  position: absolute;
+  top: 10px;
+  left: 598px;
+  bottom: 10px;
+  max-height: 200px;
+  padding: 0.5em 2px 0.5em 0;
+}
+
+.hasNote {
+  padding-right: 5px;
+}
+
+.note:hover {
+  padding-left: 10px;
+  padding-right: 10px;
+  min-height: 100px;
+  z-index: 1;
+}
+
+.note:hover textarea {
+  display: block;
 }

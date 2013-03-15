@@ -71,6 +71,7 @@
     
     <script id="t_addProblem" type="text/x-handlebars-template">
       <div id="{{id}}" class="step">
+        <div id="{{id}}_note" class="note"><textarea id="{{id}}_note_field" placeholder="Notes">{{{note}}}</textarea></div>
         <div class="duck">What seems to be the problem?</div>
         {{#if next}}
           <div id="{{id}}_text">{{text}}</div>
@@ -83,6 +84,7 @@
     
     <script id="t_addCauses" type="text/x-handlebars-template">
       <div id="{{id}}" class="step">
+        <div id="{{id}}_note" class="note"><textarea id="{{id}}_note_field" placeholder="Notes">{{{note}}}</textarea></div>
         <div class="duck">{{#if first}}What could be causing it?{{else}}What other causes can you think of?{{/if}}</div>
         <table id="{{id}}_table" class="addCauses">
           {{{causes}}}
@@ -107,6 +109,7 @@
     
     <script id="t_addTests" type="text/x-handlebars-template">
       <div id="{{id}}" class="step">
+        <div id="{{id}}_note" class="note"><textarea id="{{id}}_note_field" placeholder="Notes">{{{note}}}</textarea></div>
         <div class="duck">{{#if first}}OK. What could you do to find out the cause?{{else}}What else could you do to find out the cause?{{/if}}</div>
         <div id="{{id}}_tests" class="addTests">
           {{{tests}}}
@@ -190,6 +193,7 @@
 
     <script id="t_testDone" type="text/x-handlebars-template">
       <div id="{{id}}" class="step">
+        <div id="{{id}}_note" class="note"><textarea id="{{id}}_note_field" placeholder="Notes">{{{note}}}</textarea></div>
         {{{tests}}}
         <div id="{{id}}_outcomes">
           {{#if hasOutcome}}
@@ -215,6 +219,7 @@
     
     <script id="t_duckSuggestion" type="text/x-handlebars-template">
       <div id="{{id}}" class="step">
+        <div id="{{id}}_note" class="note"><textarea id="{{id}}_note_field" placeholder="Notes">{{{note}}}</textarea></div>
         <div id="{{id}}" class="duckSuggestion duck">
           You should: {{test.text}}
         </div>
@@ -223,6 +228,7 @@
     
     <script id="t_duckConclusion" type="text/x-handlebars-template">
       <div id="{{id}}" class="step">
+        <div id="{{id}}_note" class="note"><textarea id="{{id}}_note_field" placeholder="Notes">{{{note}}}</textarea></div>
         <div id="{{id}}_text" class="duckConclusion duck">
           {{cause.text}}
         </div>
@@ -232,6 +238,7 @@
     
     <script id="t_duckMessage" type="text/x-handlebars-template">
       <div id="{{id}}" class="step">
+        <div id="{{id}}_note" class="note"><textarea id="{{id}}_note_field" placeholder="Notes">{{{note}}}</textarea></div>
         <div class="duckMessage duck">
           {{{text}}}
         </div>

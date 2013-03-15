@@ -46,6 +46,9 @@ if (localStorage) {
 }
 
 function save() {
+  problem.steps.forEach(function(step) {
+    step.note = $("#" + step.id + "_note_field").val();
+  });
   problem.scrollTop = $(document).scrollTop();
   problem.scrollLeft = $(document).scrollLeft();
   if (localStorage) {
@@ -202,6 +205,7 @@ function addCausesStep(ctx, id) {
   $("#" + id).after(stepHtml(ctx.step, ctx.prev, addCauses)).remove();
   $("#content").append(stepHtml(addCauses, ctx.step, null));
   wireStep(addCauses);
+  wireNote(addCauses);
   save();
 }
 
@@ -231,6 +235,7 @@ function addTestsStep(ctx, id) {
   $("#" + id).after(stepHtml(ctx.step, ctx.prev, addTests)).remove();
   $("#content").append(stepHtml(addTests, ctx.step, null));
   wireStep(addTests);
+  wireNote(addTests);
   save();
 }
 
@@ -308,12 +313,14 @@ function newSuggestion(ctx) {
       problem.steps.push(duckMessage);
       $("#" + ctx.step.id).after(stepHtml(ctx.step, ctx.prev, duckMessage)).remove();
       $("#content").append(stepHtml(duckMessage, ctx.step, null));
+      wireNote(duckMessage);
       addTestsStep(ctx, ctx.step.id);
     } else if (conc == ALL_POSSIBILITIES_ELIMINATED) {
       var duckMessage = { "type": "duckMessage", "id": problem.idCounter++, "text": "Oh dear. We've eliminated all possibilities." };
       problem.steps.push(duckMessage);
       $("#" + ctx.step.id).after(stepHtml(ctx.step, ctx.prev, duckMessage)).remove();
       $("#content").append(stepHtml(duckMessage, ctx.step, null));
+      wireNote(duckMessage);
       addCausesStep(ctx, ctx.step.id);
     } else {
       var duckConclusion = {
@@ -325,6 +332,7 @@ function newSuggestion(ctx) {
       $("#" + ctx.step.id).after(stepHtml(ctx.step, ctx.prev, duckConclusion)).remove();
       $("#content").append(stepHtml(duckConclusion, ctx.step, null));
       wireStep(duckConclusion);
+      wireNote(duckConclusion);
     }
     bottom();
   } else {
@@ -336,6 +344,7 @@ function newSuggestion(ctx) {
     problem.steps.push(duckSuggestion);
     $("#" + ctx.step.id).after(stepHtml(ctx.step, ctx.prev, duckSuggestion)).remove();
     $("#content").append(stepHtml(duckSuggestion, ctx.step, null));
+    wireNote(duckSuggestion);
     var testDone = {
       "type": "testDone",
       "id": problem.idCounter++,
@@ -346,8 +355,25 @@ function newSuggestion(ctx) {
     problem.steps.push(testDone);
     $("#content").append(stepHtml(testDone, duckSuggestion, null));
     wireStep(testDone);
+    wireNote(testDone);
     bottom();
   }
+}
+
+function wireNote(step) {
+  if ($("#" + step.id + "_note_field").val().length > 0) {
+    $("#" + step.id + "_note").addClass("hasNote");
+  } else {
+    $("#" + step.id + "_note").removeClass("hasNote");
+  }
+  $("#" + step.id + "_note_field").keyup(function() {
+    if ($("#" + step.id + "_note_field").val().length > 0) {
+      $("#" + step.id + "_note").addClass("hasNote");
+    } else {
+      $("#" + step.id + "_note").removeClass("hasNote");
+    }
+  });
+  $("#" + step.id + "_note").mouseleave(save);
 }
 
 function wireStep(step) {
@@ -673,6 +699,7 @@ function restartDuck() {
       i == 0 ? null : problem.steps[i - 1],
       i == problem.steps.length - 1 ? null : problem.steps[i + 1]));
     wireStep(problem.steps[i]);
+    wireNote(problem.steps[i]);
   }
   
   updateMenu();

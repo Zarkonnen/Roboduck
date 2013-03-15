@@ -1,3 +1,19 @@
+/* Helpers */
+function bottom() {
+  setTimeout(function() {
+    window.scrollTo(0, document.body.scrollHeight);
+  }, 10);
+}
+
+function giveFocus(id) {
+  $("#" + id).focus();
+  var el = $("#" + id)[0];
+  try {
+    el.selectionStart = $("#" + id).val().length;
+  } catch (e) {}
+}
+
+/* Constants */
 var DEFAULT_LIKELIHOOD = "Possible";
 var DEFAULT_COST = "About 10 Minutes";
 var UNCLEAR = "unclear";
@@ -11,6 +27,8 @@ var data = {
       "text": "",
       "causes": [],
       "tests": [],
+      "scrollTop": 0,
+      "scrollLeft": 0,
       "steps": [
         {
           "id": 0,
@@ -28,6 +46,8 @@ if (localStorage) {
 }
 
 function save() {
+  problem.scrollTop = $(document).scrollTop();
+  problem.scrollLeft = $(document).scrollLeft();
   if (localStorage) {
     localStorage.roboduck_data = JSON.stringify(data);
   }
@@ -335,12 +355,6 @@ function wireStep(step) {
   bottom();
 }
 
-function bottom() {
-  setTimeout(function() {
-    window.scrollTo(0, document.body.scrollHeight);
-  }, 100);
-}
-
 var stepWirers = {
   "addProblem": function(step) {
     $("#" + step.id + "_ok").click(function() { problemOK(step.id); });
@@ -348,16 +362,17 @@ var stepWirers = {
       if (e.keyCode == 13) {
         problemOK(step.id);
       }
-    }).focus();
+    });
+    giveFocus(step.id + "_input");
   },
   "addCauses": function(step) {
     step.editingCauses.forEach(function(cause) { wireEditingCause(cause, step); });
-    $("#" + step.editingCauses[0].id + "_input").focus();
+    giveFocus(step.editingCauses[0].id + "_input");
     $("#" + step.id + "_done").click(function() { causesOK(step.id); });
   },
   "addTests": function(step) {
     step.editingTests.forEach(function(test) { wireEditingTest(test, step); });
-    $("#" + step.editingTests[0].id + "_input").focus();
+    giveFocus(step.editingTests[0].id + "_input");
   },
   "duckSuggestion": function(step) {},
   "testDone": function(step) {
@@ -391,7 +406,7 @@ function wireEditingCause(cause, step) {
         if (!cause.pEdited) {
           $("#" + cause.id + "_p").focus();
         } else {
-          $("#" + (cause.id + 1) + "_input").focus();
+          giveFocus((cause.id + 1) + "_input");
         }
       }
       save();
@@ -405,7 +420,7 @@ function wireEditingCause(cause, step) {
   });
   $("#" + cause.id + "_p").keyup(function (e) {
     if (e.keyCode == 13) {
-      $("#" + (cause.id + 1) + "_input").focus();
+      giveFocus((cause.id + 1) + "_input");
       save();
     }
   });
@@ -440,7 +455,7 @@ function wireEditingTest(test, step) {
   });
   $("#" + test.id + "_cost").keyup(function (e) {
     if (e.keyCode == 13) {
-      $("#" + test.outcomes[0].id + "_input").focus();
+      giveFocus(test.outcomes[0].id + "_input");;
       save();
     }
   });
@@ -483,7 +498,7 @@ function wireEditingOutcome(outcome, test, step) {
       save();
     }
     if (e.keyCode == 13) {
-      $("#" + (outcome.id + 1) + "_input").focus();
+      giveFocus((outcome.id + 1) + "_input");
       save();
     }
   });
@@ -522,7 +537,7 @@ function wireEditingTestButtons(test, step) {
     step.editingTests.push(newTest);
     $("#" + step.id).append(t("editingTest", newTest));
     wireEditingTest(newTest, step);
-    $("#" + newTest.id + "_input").focus();
+    giveFocus(newTest.id + "_input");
     bottom();
     save();
   });
@@ -644,9 +659,13 @@ var stepRenderers = {
 
 function startDuck() {
   restartDuck();
+  setInterval(save, 3000);
 }
 
 function restartDuck() {
+  var scrollTop = problem.scrollTop;
+  var scrollLeft = problem.scrollLeft;
+  
   $("#content").html("");
   for (var i = 0; i < problem.steps.length; i++) {
     $("#content").append(stepHtml(
@@ -657,6 +676,11 @@ function restartDuck() {
   }
   
   updateMenu();
+  
+  setTimeout(function() {
+    $(document).scrollTop(scrollTop);
+    $(document).scrollLeft(scrollLeft);
+  }, 20);
 }
 
 function updateMenu() {
@@ -674,10 +698,10 @@ function updateMenu() {
 }
 
 function switchToProblem(id) {
+  save();
   data.currentProblem = id;
   problem = data.problems[data.currentProblem];
   restartDuck();
-  save();
 }
 
 function newProblem() {

@@ -153,6 +153,10 @@ div.step, div.outcome, div.test {
   border: 1px solid #c0c0c0;
 }
 
+div.step {
+  background: url('images/bg_light.png');
+}
+
 div.outcome, div.test {
   margin-left: -0.5em;
   margin-right: -0.5em;

@@ -1,16 +1,24 @@
 /* Helpers */
+var loading = false;
+var lastFocusId = "";
+
 function bottom() {
-  setTimeout(function() {
-    window.scrollTo(0, document.body.scrollHeight);
-  }, 10);
+  if (!loading) {
+    setTimeout(function() {
+      window.scrollTo(0, document.body.scrollHeight);
+    }, 10);
+  }
 }
 
 function giveFocus(id) {
-  $("#" + id).focus();
-  var el = $("#" + id)[0];
-  try {
-    el.selectionStart = $("#" + id).val().length;
-  } catch (e) {}
+  lastFocusId = id;
+  if (!loading) {
+    $("#" + id).focus();
+    var el = $("#" + id)[0];
+    try {
+      el.selectionStart = $("#" + id).val().length;
+    } catch (e) {}
+  }
 }
 
 /* Constants */
@@ -430,7 +438,7 @@ function wireEditingCause(cause, step) {
         causesOK(step.id);
       } else {
         if (!cause.pEdited) {
-          $("#" + cause.id + "_p").focus();
+          giveFocus(cause.id + "_p");
         } else {
           giveFocus((cause.id + 1) + "_input");
         }
@@ -469,7 +477,7 @@ function wireEditingTest(test, step) {
       bottom();
     }
     if (e.keyCode == 13) {
-      $("#" + test.id + "_cost").focus();
+      giveFocus(test.id + "_cost");
       save();
     }
   });
@@ -692,6 +700,7 @@ function restartDuck() {
   var scrollTop = problem.scrollTop;
   var scrollLeft = problem.scrollLeft;
   
+  loading = true;
   $("#content").html("");
   for (var i = 0; i < problem.steps.length; i++) {
     $("#content").append(stepHtml(
@@ -705,6 +714,8 @@ function restartDuck() {
   updateMenu();
   
   setTimeout(function() {
+    loading = false;
+    giveFocus(lastFocusId);
     $(document).scrollTop(scrollTop);
     $(document).scrollLeft(scrollLeft);
   }, 20);
@@ -757,7 +768,7 @@ function exportProblem() {
   $("#import").remove();
   $("#content").append(t("export", null, { "json": JSON.stringify(problem, null, "  ") }));
   $("#closeExport").click(function() { $("#export").remove(); });
-  $("#exportContent").focus();
+  giveFocus("exportContent");
   $("#exportContent")[0].selectionStart = 0;
   $("#exportContent")[0].selectionEnd = $("#exportContent").val().length;
 }
@@ -782,5 +793,5 @@ function importProblem() {
       save();
     }
   });
-  $("#importContent").focus();
+  giveFocus("importContent");
 }
